@@ -37,16 +37,16 @@ Definition fh := htotal.
 Theorem strlen_nwc: forall s2 s1, strlen_i386 s1 = strlen_i386 s2.
 Proof. reflexivity. Qed.
 
-(*
 (* Example #1: Type safety
    We first prove that the program is well-typed (automated by the Picinae_typecheck tactic).
    This is useful for later inferring that all CPU registers and memory contents have
    values of appropriate bitwidth throughout the program's execution. *)
-Theorem strcmp_welltyped: welltyped_prog x86typctx strcmp_i386.
+Theorem strlen_welltyped: welltyped_prog x86typctx strlen_i386.
 Proof.
   Picinae_typecheck.
 Qed.
 
+(*
 (* Example #2: Memory safety
    Strcmp contains no memory-writes, and is therefore trivially memory-safe. *)
 Theorem strcmp_preserves_memory:
