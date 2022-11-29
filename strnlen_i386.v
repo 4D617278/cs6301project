@@ -2,7 +2,7 @@ Require Import Picinae_i386.
 Require Import NArith.
 Open Scope N.
 
-Definition libc_so_6_strnlen_i386 : program := fun _ a => match a with
+Definition strnlen_i386 : program := fun _ a => match a with
 
 (* 0x49e750: ENDBR32  *)
 | 0 => Some (4,
