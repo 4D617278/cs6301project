@@ -37,12 +37,9 @@ Picinae_amd64.vos Picinae_amd64.vok Picinae_amd64.required_vos: Picinae_amd64.v 
 strcmp_i386.vo strcmp_i386.glob strcmp_i386.v.beautified strcmp_i386.required_vo: strcmp_i386.v Picinae_i386.vo
 strcmp_i386.vio: strcmp_i386.v Picinae_i386.vio
 strcmp_i386.vos strcmp_i386.vok strcmp_i386.required_vos: strcmp_i386.v Picinae_i386.vos
-strcmp_proofs.vo strcmp_proofs.glob strcmp_proofs.v.beautified strcmp_proofs.required_vo: strcmp_proofs.v Picinae_i386.vo strcmp_i386.vo
-strcmp_proofs.vio: strcmp_proofs.v Picinae_i386.vio strcmp_i386.vio
-strcmp_proofs.vos strcmp_proofs.vok strcmp_proofs.required_vos: strcmp_proofs.v Picinae_i386.vos strcmp_i386.vos
 strncmp_i386.vo strncmp_i386.glob strncmp_i386.v.beautified strncmp_i386.required_vo: strncmp_i386.v Picinae_i386.vo
 strncmp_i386.vio: strncmp_i386.v Picinae_i386.vio
 strncmp_i386.vos strncmp_i386.vok strncmp_i386.required_vos: strncmp_i386.v Picinae_i386.vos
-strncmp_proofs.vo strncmp_proofs.glob strncmp_proofs.v.beautified strncmp_proofs.required_vo: strncmp_proofs.v Picinae_i386.vo strcmp_i386.vo
-strncmp_proofs.vio: strncmp_proofs.v Picinae_i386.vio strcmp_i386.vio
-strncmp_proofs.vos strncmp_proofs.vok strncmp_proofs.required_vos: strncmp_proofs.v Picinae_i386.vos strcmp_i386.vos
+strlen_i386.vo strlen_i386.glob strlen_i386.v.beautified strlen_i386.required_vo: strlen_i386.v Picinae_i386.vo
+strlen_i386.vio: strlen_i386.v Picinae_i386.vio
+strlen_i386.vos strlen_i386.vok strlen_i386.required_vos: strlen_i386.v Picinae_i386.vos
