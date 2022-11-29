@@ -14,7 +14,7 @@
    * Picinae_statics
    * Picinae_slogic
    * Picinae_i386
-   * strcmp_i386
+   * strncmp_i386
    (in that order) and then compile this module using menu option
    Compile->Compile buffer.
  *)
@@ -25,7 +25,7 @@ Require Import Arith.
 Require Import NArith.
 Require Import ZArith.
 Require Import Picinae_i386.
-Require Import strcmp_i386.
+Require Import strncmp_i386.
 
 Import X86Notations.
 Open Scope N.
@@ -34,29 +34,28 @@ Open Scope N.
 Definition fh := htotal.
 
 (* The x86 lifter models non-writable code. *)
-Theorem strcmp_nwc: forall s2 s1, strcmp_i386 s1 = strcmp_i386 s2.
+Theorem strncmp_nwc: forall s2 s1, strncmp_i386 s1 = strncmp_i386 s2.
 Proof. reflexivity. Qed.
 
 (* Example #1: Type safety
    We first prove that the program is well-typed (automated by the Picinae_typecheck tactic).
    This is useful for later inferring that all CPU registers and memory contents have
    values of appropriate bitwidth throughout the program's execution. *)
-Theorem strcmp_welltyped: welltyped_prog x86typctx strcmp_i386.
+Theorem strncmp_welltyped: welltyped_prog x86typctx strncmp_i386.
 Proof.
   Picinae_typecheck.
 Qed.
 
+(*
 (* Example #2: Memory safety
    Strcmp contains no memory-writes, and is therefore trivially memory-safe. *)
-Theorem strcmp_preserves_memory:
+Theorem strncmp_preserves_memory:
   forall s n s' x,
-  exec_prog fh strcmp_i386 0 s n s' x -> s' V_MEM32 = s V_MEM32.
+  exec_prog fh strncmp_i386 0 s n s' x -> s' V_MEM32 = s V_MEM32.
 Proof.
   intros. eapply noassign_prog_same; [|eassumption].
   prove_noassign.
 Qed.
-
-
 
 (* Example #3: Architectural calling convention compliance
    Strcmp does not write to callee-save registers (e.g., EBX)
@@ -269,3 +268,4 @@ Proof.
         rewrite (proj2 (N.compare_lt_iff _ _)), (proj2 (N.ltb_lt _ _)) by exact BC. reflexivity.
         rewrite (proj2 (N.compare_gt_iff _ _)) by exact BC. rewrite (proj2 (N.ltb_ge _ _)) by apply N.lt_le_incl, BC. reflexivity.
 Qed.
+*)
