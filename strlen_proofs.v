@@ -19,20 +19,6 @@
    Compile->Compile buffer.
  *)
 
-Require Import Utf8.
-Require Import FunctionalExtensionality.
-Require Import Arith.
-Require Import NArith.
-Require Import ZArith.
-Require Import Picinae_i386.
-Require Import strlen_i386.
-
-Import X86Notations.
-Open Scope N.
-
-(* Use a flat memory model for these proofs. *)
-Definition fh := htotal.
-
 (* The x86 lifter models non-writable code. *)
 Theorem strlen_nwc: forall s2 s1, strlen_i386 s1 = strlen_i386 s2.
 Proof. reflexivity. Qed.
