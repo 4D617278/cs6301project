@@ -11,3 +11,9 @@ Picinae_i386.v
 Picinae_armv7.v
 Picinae_riscv.v
 Picinae_amd64.v
+strcmp_i386.v
+strcmp_proofs.v
+strncmp_i386.v
+strncmp_proofs.v
+strlen_i386.v
+strlen_proofs.v
