@@ -56,28 +56,32 @@ Proof.
   intros. eapply noassign_prog_same; [|eassumption].
   prove_noassign.
 Qed.
+*)
 
+(*
 (* Example #3: Architectural calling convention compliance
    Strcmp does not write to callee-save registers (e.g., EBX)
    and it restores ESP on exit. *)
 
 Theorem strcmp_preserves_ebx:
   forall s n s' x,
-  exec_prog fh strcmp_i386 0 s n s' x -> s' R_EBX = s R_EBX.
+  exec_prog fh strncmp_i386 0 s n s' x -> s' R_EBX = s R_EBX.
 Proof.
   intros. eapply noassign_prog_same; [|eassumption].
   prove_noassign.
+  Show.
 Qed.
+*)
 
 Theorem strcmp_preserves_readable:
   forall s n s' x,
-  exec_prog fh strcmp_i386 0 s n s' x -> s' A_READ = s A_READ.
+  exec_prog fh strncmp_i386 0 s n s' x -> s' A_READ = s A_READ.
 Proof.
   intros. eapply noassign_prog_same; [|eassumption].
   prove_noassign.
 Qed.
 
-
+(*
 (* Proving that strlen restores ESP on exit is our first example of a property that
    requires stepwise symbolic interpretation of the program to verify.  We first
    define a set of invariants, one for each program point.  In this simple case,
