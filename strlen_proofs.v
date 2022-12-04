@@ -136,3 +136,16 @@ Proof.
   all: try reflexivity.
   all: assumption.
 Admitted.
+(* Example #4: Partial correctness *)
+
+(* Define string length *)
+Definition strlen (m:addr->N) (s:addr) (l:N) := 
+   ∀ i, i < l -> m (s ⊕ i) <> 0 /\ m (s ⊕ l) = 0.
+
+(*
+(* The post-condition says that interpreting EAX as an unsigned integer yields
+   a number n which when added to the address of the string has a memory content
+   of zero. *)
+Definition strlen_post (m:addr->N) (esp:N) (_:exit) (s:store) :=
+  ∃ n, s R_EAX = Ⓓn /\ strlen m (m Ⓓ[esp⊕4]) n
+*)
