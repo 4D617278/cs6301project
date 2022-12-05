@@ -111,3 +111,48 @@ Definition strncmp_post (m:addr->N) (esp:N) (_:exit) (s:store) :=
              (streq m p1 p2 i /\
              (n = 0 -> (m (p1 ⊕ i) = (m (p2 ⊕ i)))) /\
              (m (p1 ⊕ i) ?= m (p2 ⊕ i)) = (toZ 32 n ?= Z0)%Z)).
+
+(* The invariant-set and post-conditions are combined *)
+Definition strncmp_invset (mem:addr->N) (esp:N) :=
+  invs (strncmp_invs mem esp) (strncmp_post mem esp).
+
+(* (MDL0) Assume that on entry the processor is in a valid state.
+   (ESP0) Let esp be the value of the ESP register on entry.
+   (MEM0) Let mem be the memory state on entry.
+   (RET) Assume the return address on the stack on entry is not within strcmp(!)
+   (XP0) Let x and s' be the exit condition and store after n instructions execute.
+   From these, we prove that all invariants hold true for arbitrary n. *)
+Theorem strncmp_partial_correctness:
+  forall s esp mem n s' x
+         (MDL0: models x86typctx s)
+         (ESP0: s R_ESP = Ⓓ esp) (MEM0: s V_MEM32 = Ⓜ mem)
+         (RET: strncmp_i386 s (mem Ⓓ[esp]) = None)
+         (XP0: exec_prog fh strncmp_i386 0 s n s' x),
+  trueif_inv (strncmp_invset mem esp strncmp_i386 x s').
+Proof.
+  intros.
+  eapply prove_invs. exact XP0.
+
+  (* The pre-condition (True) is trivially satisfied. *)
+  exact I.
+
+  (* Before splitting into cases, translate each hypothesis about the
+     entry point store s to each instruction's starting store s1: *)
+  intros.
+  assert (MDL: models x86typctx s1).
+    eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
+  rewrite (strncmp_nwc s1) in RET.
+
+  (* Break the proof into cases, one for each invariant-point. *)
+  destruct_inv 32 PRE.
+
+  (* Time how long it takes for each symbolic interpretation step to complete
+     (for profiling and to give visual cues that something is happening...). *)
+  Local Ltac step := time x86_step.
+
+  (* Address 0 *)
+  step. step. step. step. step. step. step. step. step.
+
+  (* Address 17 *)
+  Show.
+Qed.
