@@ -56,30 +56,32 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00004: SUB ESP,0x8 *)
   | 7 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
 
-  | 134 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+  | 73 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
+
+  | 134 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
   (* 0x40c00086: ADD ESP,0x8 *)
 
-  | 139 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  | 139 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c0008b: POP EBX *)
-  | 140 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
+  | 140 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c0008c: POP ESI *)
-  | 141 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
+  | 141 => Some (s R_ESP = Ⓓ (esp0 ⊖ 8) /\ 24 <= esp0)
   (* 0x40c0008d: POP EDI *)
-  | 142 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  | 142 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c0008e: POP EBP *)
   | 143 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c0008f: RET  *)
 
-  | 144 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+  | 144 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
   (* 0x40c00090: ADD ESP,0x8 *)
 
-  | 149 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  | 149 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00095: POP EBX *)
-  | 150 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
+  | 150 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c00096: POP ESI *)
-  | 151 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
+  | 151 => Some (s R_ESP = Ⓓ (esp0 ⊖ 8) /\ 24 <= esp0)
   (* 0x40c00097: POP EDI *)
-  | 152 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  | 152 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c00098: POP EBP *)
   | 153 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c00099: RET  *)
@@ -178,7 +180,31 @@ Proof.
 
   (* Address ? *)
   destruct PRE as [PRE PRE0].
-  repeat step. 
+  repeat step.
+  split.
+  psimpl.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  psimpl.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  psimpl.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  psimpl.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  psimpl.
+  reflexivity.
+  apply PRE0.
   Show.
 Qed.
 
