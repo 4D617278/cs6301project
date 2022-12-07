@@ -241,7 +241,24 @@ Proof.
   apply test.
   apply PRE0.
   apply PRE0.
-  Show.
+
+  (* Address 153 *)
+  split.
+  rewrite <- N.add_sub_swap.
+  psimpl.
+  reflexivity.
+
+  rewrite (N.le_trans 16 24 esp0). reflexivity.
+  replace 24 with (16 + 8) by reflexivity.
+  apply N.le_add_r.
+
+  apply PRE0.
+  apply PRE0.
+
+  (* Post Condition *)
+  unfold esp_post.
+  simpl. psimpl.
+  reflexivity.
 Qed.
 
 (* Example #4: Partial correctness
