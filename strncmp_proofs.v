@@ -49,16 +49,12 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   | 0 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c00000: PUSH EBP *)
   | 1 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
-  (*
   (* 0x40c00001: PUSH EDI *)
-  | 2 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
   (* 0x40c00002: PUSH ESI *)
-  | 3 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
   (* 0x40c00003: PUSH EBX *)
-  *)
   | 4 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00004: SUB ESP,0x8 *)
-  | 5 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+  | 7 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
 
   | 134 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
   (* 0x40c00086: ADD ESP,0x8 *)
@@ -87,6 +83,8 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00098: POP EBP *)
   | 153 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c00099: RET  *)
+
+  (* 0x40c000a0:   *)
   | _ => None
   end.
 
@@ -114,64 +112,73 @@ Proof.
   assert (MDL: models x86typctx s1).
     eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
   rewrite (strncmp_nwc s1) in RET.
+  assert (H: 4 <= 24).
+    replace 24 with (4 + 20) by reflexivity. apply N.le_add_r.
 
   destruct_inv 32 PRE.
-  destruct PRE as [PRE PRE0].
 
   Local Ltac step := time x86_step.
 
+  (* all: repeat step. *)
+
   (* Address 1 *)
+  destruct PRE as [PRE PRE0].
   step.
   split.
-  rewrite (sub_mod_2w 32 esp0 4).
-  psimpl. reflexivity.
-  rewrite (N.le_trans 4 24 esp0). reflexivity.
-  replace 24 with (4 + 20) by reflexivity.
-  apply N.le_add_r.
-  apply PRE0.
+  rewrite N.add_comm.
+  rewrite N.add_sub_swap.
+  psimpl.
   reflexivity.
+
+  rewrite (N.le_trans 4 24 esp0). reflexivity.
+  apply H.
+  apply PRE0.
   apply PRE0.
 
   (* Address 4 *)
   destruct PRE as [PRE PRE0].
-  step. step. step.
+  repeat step.
   split.
-  Search (_ + _ mod _).
   rewrite N.add_sub_assoc.
-  rewrite N.add_sub_swap. psimpl.
-  rewrite N.add_sub_swap. psimpl.
-  rewrite N.add_sub_swap. psimpl.
-  replace 4294967284 with (2 ^ 32 - 12).
-  rewrite N.add_sub_swap. psimpl.
-  replace 4294967280 with (2 ^ 32 - 16).
+  repeat rewrite <- N.sub_add_distr.
+  psimpl.
   rewrite N.add_comm.
-  rewrite N.add_sub_assoc.
-  rewrite N.add_sub_swap. psimpl.
+  rewrite N.add_sub_swap.
+  psimpl.
   reflexivity.
+
   rewrite (N.le_trans 16 24 esp0). reflexivity.
   replace 24 with (16 + 8) by reflexivity.
   apply N.le_add_r.
   apply PRE0.
-  replace (2 ^ 32) with (16 + 4294967280) by reflexivity.
-  apply N.le_add_r.
-  reflexivity.
-  replace (2 ^ 32 - 12) with (4 + 4294967280) by reflexivity.
-  apply N.le_add_r.
-  reflexivity.
 
-  replace (4294967288) with (4 + 4294967284) by reflexivity.
-  apply N.le_add_r.
-  replace (4294967292) with (4 + 4294967288) by reflexivity.
-  apply N.le_add_r.
-  replace (2 ^ 32) with (4 + 4294967292) by reflexivity.
-  apply N.le_add_r.
   rewrite (N.le_trans 4 24 esp0). reflexivity.
-  replace 24 with (4 + 20) by reflexivity.
-  apply N.le_add_r.
+  apply H.
   apply PRE0.
   apply PRE0.
 
   (* Address 5 *)
+  destruct PRE as [PRE PRE0].
+  repeat step. 
+  split.
+  rewrite N.add_sub_assoc.
+  repeat rewrite <- N.sub_add_distr.
+  psimpl.
+  rewrite N.add_comm.
+  rewrite N.add_sub_swap.
+  psimpl.
+  reflexivity.
+
+  apply PRE0.
+  rewrite (N.le_trans 16 24 esp0). reflexivity.
+  replace 24 with (16 + 8) by reflexivity.
+  apply N.le_add_r.
+  apply PRE0.
+  apply PRE0.
+
+  (* Address ? *)
+  destruct PRE as [PRE PRE0].
+  repeat step. 
   Show.
 Qed.
 
