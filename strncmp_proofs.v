@@ -56,7 +56,7 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   | 3 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
   (* 0x40c00003: PUSH EBX *)
   *)
-  | 4 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  | 4 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00004: SUB ESP,0x8 *)
   | 5 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
 
@@ -120,8 +120,6 @@ Proof.
 
   Local Ltac step := time x86_step.
 
-  Search (_ mod _).
-
   (* Address 1 *)
   step.
   split.
@@ -135,12 +133,45 @@ Proof.
   apply PRE0.
 
   (* Address 4 *)
-  - destruct PRE as [PRE PRE0].
+  destruct PRE as [PRE PRE0].
   step. step. step.
   split.
-  Show.
-  + rewrite (sub_sbop 32 esp0 4).
+  Search (_ + _ mod _).
+  rewrite N.add_sub_assoc.
+  rewrite N.add_sub_swap. psimpl.
+  rewrite N.add_sub_swap. psimpl.
+  rewrite N.add_sub_swap. psimpl.
+  replace 4294967284 with (2 ^ 32 - 12).
+  rewrite N.add_sub_swap. psimpl.
+  replace 4294967280 with (2 ^ 32 - 16).
+  rewrite N.add_comm.
+  rewrite N.add_sub_assoc.
+  rewrite N.add_sub_swap. psimpl.
+  reflexivity.
+  rewrite (N.le_trans 16 24 esp0). reflexivity.
+  replace 24 with (16 + 8) by reflexivity.
+  apply N.le_add_r.
+  apply PRE0.
+  replace (2 ^ 32) with (16 + 4294967280) by reflexivity.
+  apply N.le_add_r.
+  reflexivity.
+  replace (2 ^ 32 - 12) with (4 + 4294967280) by reflexivity.
+  apply N.le_add_r.
+  reflexivity.
 
+  replace (4294967288) with (4 + 4294967284) by reflexivity.
+  apply N.le_add_r.
+  replace (4294967292) with (4 + 4294967288) by reflexivity.
+  apply N.le_add_r.
+  replace (2 ^ 32) with (4 + 4294967292) by reflexivity.
+  apply N.le_add_r.
+  rewrite (N.le_trans 4 24 esp0). reflexivity.
+  replace 24 with (4 + 20) by reflexivity.
+  apply N.le_add_r.
+  apply PRE0.
+  apply PRE0.
+
+  (* Address 5 *)
   Show.
 Qed.
 
