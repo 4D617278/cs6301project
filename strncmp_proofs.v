@@ -62,15 +62,10 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00086: ADD ESP,0x8 *)
 
   | 139 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
-  (*
   (* 0x40c0008b: POP EBX *)
-  | 140 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c0008c: POP ESI *)
-  | 141 => Some (s R_ESP = Ⓓ (esp0 ⊖ 8) /\ 24 <= esp0)
   (* 0x40c0008d: POP EDI *)
-  | 142 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c0008e: POP EBP *)
-  *)
   | 143 => Some (s R_ESP = Ⓓ (esp0 mod 2 ^ 32) /\ 24 <= esp0)
   (* 0x40c0008f: RET  *)
 
@@ -79,12 +74,14 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
 
   | 149 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00095: POP EBX *)
+  (*
   | 150 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c00096: POP ESI *)
   | 151 => Some (s R_ESP = Ⓓ (esp0 ⊖ 8) /\ 24 <= esp0)
   (* 0x40c00097: POP EDI *)
   | 152 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c00098: POP EBP *)
+  *)
   | 153 => Some (s R_ESP = Ⓓ (esp0 mod 2 ^ 32) /\ 24 <= esp0)
   (* 0x40c00099: RET  *)
   | _ => None
@@ -114,8 +111,6 @@ Proof.
 
   simpl.
   apply H.
-
-  Show.
 Qed.
 
 (* Asserts that this invariant-set is satisfied at all points *)
@@ -123,13 +118,14 @@ Theorem strncmp_preserves_esp:
   forall s esp0 mem n s' x'
          (MDL0: models x86typctx s)
          (ESP0: s R_ESP = Ⓓ esp0 /\ 24 <= esp0) (MEM0: s V_MEM32 = Ⓜ mem)
-         (RET: strncmp_i386 s (mem Ⓓ[esp0]) = None)
+         (RET: strncmp_i386 s (mem Ⓓ[esp0 mod 2 ^ 32]) = None)
          (XP0: exec_prog fh strncmp_i386 0 s n s' x'),
   trueif_inv (strncmp_esp_invset esp0 strncmp_i386 x' s').
 Proof.
   intros.
   eapply prove_invs. exact XP0.
   exact ESP0.
+
   intros.
   assert (MDL: models x86typctx s1).
     eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
@@ -142,10 +138,9 @@ Proof.
   Local Ltac step := time x86_step.
 
   (* all: repeat step. *)
+  all: destruct PRE as [PRE PRE0]; repeat step.
 
   (* Address 1 *)
-  destruct PRE as [PRE PRE0].
-  step.
   split.
   rewrite N.add_comm.
   rewrite N.add_sub_swap.
@@ -158,8 +153,6 @@ Proof.
   apply PRE0.
 
   (* Address 4 *)
-  destruct PRE as [PRE PRE0].
-  repeat step.
   split.
   rewrite N.add_sub_assoc.
   repeat rewrite <- N.sub_add_distr.
@@ -180,8 +173,6 @@ Proof.
   apply PRE0.
 
   (* Address 7 *)
-  destruct PRE as [PRE PRE0].
-  repeat step. 
   split.
   rewrite N.add_sub_assoc.
   repeat rewrite <- N.sub_add_distr.
@@ -199,8 +190,6 @@ Proof.
   apply PRE0.
 
   (* Address 73 *)
-  destruct PRE as [PRE PRE0].
-  repeat step.
   split. reflexivity. apply PRE0.
   split. reflexivity. apply PRE0.
   split. reflexivity. apply PRE0.
@@ -208,16 +197,12 @@ Proof.
   split. reflexivity. apply PRE0.
 
   (* Address 134 *)
-  destruct PRE as [PRE PRE0].
-  repeat step.
   split. reflexivity. apply PRE0.
   split. reflexivity. apply PRE0.
   split. reflexivity. apply PRE0.
   split. reflexivity. apply PRE0.
 
   (* Address 139 *)
-  destruct PRE as [PRE PRE0].
-  repeat step.
   split.
   replace 24 with (16 + 8) by reflexivity.
   rewrite N.sub_add_distr.
@@ -233,9 +218,6 @@ Proof.
   apply PRE0.
 
   (* Address 143 *)
-  destruct PRE as [PRE PRE0].
-  repeat step.
-  Search (_ mod _).
   split.
   rewrite <- N.add_sub_swap.
   psimpl.
@@ -248,7 +230,11 @@ Proof.
   apply PRE0.
   apply PRE0.
 
-  (* Address ? *)
+  (* Post Condition *)
+  Show.
+  apply nextinv_ret.
+  Show.
+  rewrite RET.
   Show.
 Qed.
 
