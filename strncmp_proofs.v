@@ -178,7 +178,7 @@ Proof.
   apply PRE0.
   apply PRE0.
 
-  (* Address ? *)
+  (* Address 73 *)
   destruct PRE as [PRE PRE0].
   repeat step.
   split.
@@ -203,6 +203,25 @@ Proof.
 
   split.
   psimpl.
+  reflexivity.
+  apply PRE0.
+
+  (* Address 134 *)
+  destruct PRE as [PRE PRE0].
+  repeat step.
+  split.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  reflexivity.
+  apply PRE0.
+
+  split.
+  reflexivity.
+  apply PRE0.
+
+  split.
   reflexivity.
   apply PRE0.
   Show.
