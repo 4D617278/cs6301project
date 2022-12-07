@@ -71,7 +71,7 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   | 142 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c0008e: POP EBP *)
   *)
-  | 143 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
+  | 143 => Some (s R_ESP = Ⓓ (esp0 mod 2 ^ 32) /\ 24 <= esp0)
   (* 0x40c0008f: RET  *)
 
   | 144 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
@@ -85,10 +85,8 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00097: POP EDI *)
   | 152 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c00098: POP EBP *)
-  | 153 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
+  | 153 => Some (s R_ESP = Ⓓ (esp0 mod 2 ^ 32) /\ 24 <= esp0)
   (* 0x40c00099: RET  *)
-
-  (* 0x40c000a0:   *)
   | _ => None
   end.
 
@@ -104,9 +102,6 @@ Theorem test:
   forall esp0, 24 <= esp0 -> Ⓓ (esp0 - 24 ⊕ 8) = Ⓓ (esp0 ⊖ 16).
 Proof.
   intros.
-  Check N.add_sub_assoc.
-  Check N.add_sub_swap.
-  Check N.sub_add_distr.
 
   replace 24 with (16 + 8) by reflexivity.
   rewrite N.sub_add_distr.
@@ -234,6 +229,22 @@ Proof.
   reflexivity.
 
   simpl.
+  apply PRE0.
+  apply PRE0.
+
+  (* Address 143 *)
+  destruct PRE as [PRE PRE0].
+  repeat step.
+  Search (_ mod _).
+  split.
+  rewrite <- N.add_sub_swap.
+  psimpl.
+  reflexivity.
+
+  rewrite (N.le_trans 16 24 esp0). reflexivity.
+  replace 24 with (16 + 8) by reflexivity.
+  apply N.le_add_r.
+
   apply PRE0.
   apply PRE0.
 
