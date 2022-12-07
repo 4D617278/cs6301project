@@ -62,6 +62,7 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00086: ADD ESP,0x8 *)
 
   | 139 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
+  (*
   (* 0x40c0008b: POP EBX *)
   | 140 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c0008c: POP ESI *)
@@ -69,6 +70,7 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c0008d: POP EDI *)
   | 142 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c0008e: POP EBP *)
+  *)
   | 143 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c0008f: RET  *)
 
@@ -97,6 +99,29 @@ Definition esp_post (esp0:N) (_:exit) (s:store) := s R_ESP = Ⓓ (esp0 ⊕ 4).
    using the "invs" function. *)
 Definition strncmp_esp_invset esp0 :=
   invs (esp_invs esp0) (esp_post esp0).
+
+Theorem test:
+  forall esp0, 24 <= esp0 -> Ⓓ (esp0 - 24 ⊕ 8) = Ⓓ (esp0 ⊖ 16).
+Proof.
+  intros.
+  Check N.add_sub_assoc.
+  Check N.add_sub_swap.
+  Check N.sub_add_distr.
+
+  replace 24 with (16 + 8) by reflexivity.
+  rewrite N.sub_add_distr.
+  rewrite <- N.add_sub_swap.
+  psimpl.
+  reflexivity.
+
+  rewrite (N.le_add_le_sub_l 16 esp0 8).
+  reflexivity.
+
+  simpl.
+  apply H.
+
+  Show.
+Qed.
 
 (* Asserts that this invariant-set is satisfied at all points *)
 Theorem strncmp_preserves_esp:
@@ -159,7 +184,7 @@ Proof.
   apply PRE0.
   apply PRE0.
 
-  (* Address 5 *)
+  (* Address 7 *)
   destruct PRE as [PRE PRE0].
   repeat step. 
   split.
@@ -181,49 +206,38 @@ Proof.
   (* Address 73 *)
   destruct PRE as [PRE PRE0].
   repeat step.
-  split.
-  psimpl.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  psimpl.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  psimpl.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  psimpl.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  psimpl.
-  reflexivity.
-  apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
 
   (* Address 134 *)
   destruct PRE as [PRE PRE0].
   repeat step.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+  split. reflexivity. apply PRE0.
+
+  (* Address 139 *)
+  destruct PRE as [PRE PRE0].
+  repeat step.
   split.
+  replace 24 with (16 + 8) by reflexivity.
+  rewrite N.sub_add_distr.
+  rewrite <- N.add_sub_swap.
+  psimpl.
   reflexivity.
+
+  rewrite (N.le_add_le_sub_l 16 esp0 8).
+  reflexivity.
+
+  simpl.
+  apply PRE0.
   apply PRE0.
 
-  split.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  reflexivity.
-  apply PRE0.
-
-  split.
-  reflexivity.
-  apply PRE0.
+  (* Address ? *)
   Show.
 Qed.
 
