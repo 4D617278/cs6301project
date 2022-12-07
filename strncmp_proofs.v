@@ -43,6 +43,102 @@ Proof.
   prove_noassign.
 Qed.
 
+(* strncmp restores ESP on exit *)
+Definition esp_invs (esp0:N) (a:addr) (s:store) :=
+  match a with
+  | 0 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
+  (* 0x40c00000: PUSH EBP *)
+  | 1 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  (* 0x40c00001: PUSH EDI *)
+  (* 0x40c00002: PUSH ESI *)
+  (* 0x40c00003: PUSH EBX *)
+  | 4 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  (* 0x40c00004: SUB ESP,0x8 *)
+  | 5 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+
+  | 134 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+  (* 0x40c00086: ADD ESP,0x8 *)
+
+  | 139 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  (* 0x40c0008b: POP EBX *)
+  | 140 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
+  (* 0x40c0008c: POP ESI *)
+  | 141 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
+  (* 0x40c0008d: POP EDI *)
+  | 142 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  (* 0x40c0008e: POP EBP *)
+  | 143 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
+  (* 0x40c0008f: RET  *)
+
+  | 144 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
+  (* 0x40c00090: ADD ESP,0x8 *)
+
+  | 149 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
+  (* 0x40c00095: POP EBX *)
+  | 150 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
+  (* 0x40c00096: POP ESI *)
+  | 151 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
+  (* 0x40c00097: POP EDI *)
+  | 152 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  (* 0x40c00098: POP EBP *)
+  | 153 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
+  (* 0x40c00099: RET  *)
+  | _ => None
+  end.
+
+(* Next, we define the post-condition we wish to prove: *)
+Definition esp_post (esp0:N) (_:exit) (s:store) := s R_ESP = Ⓓ (esp0 ⊕ 4).
+
+(* The invariant set and post-condition are combined into a single invariant-set
+   using the "invs" function. *)
+Definition strncmp_esp_invset esp0 :=
+  invs (esp_invs esp0) (esp_post esp0).
+
+(* Asserts that this invariant-set is satisfied at all points *)
+Theorem strncmp_preserves_esp:
+  forall s esp0 mem n s' x'
+         (MDL0: models x86typctx s)
+         (ESP0: s R_ESP = Ⓓ esp0 /\ 24 <= esp0) (MEM0: s V_MEM32 = Ⓜ mem)
+         (RET: strncmp_i386 s (mem Ⓓ[esp0]) = None)
+         (XP0: exec_prog fh strncmp_i386 0 s n s' x'),
+  trueif_inv (strncmp_esp_invset esp0 strncmp_i386 x' s').
+Proof.
+  intros.
+  eapply prove_invs. exact XP0.
+  exact ESP0.
+  intros.
+  assert (MDL: models x86typctx s1).
+    eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
+  rewrite (strncmp_nwc s1) in RET.
+
+  destruct_inv 32 PRE.
+  destruct PRE as [PRE PRE0].
+
+  Local Ltac step := time x86_step.
+
+  Search (_ mod _).
+
+  (* Address 1 *)
+  step.
+  split.
+  - rewrite (sub_sbop 32 esp0 4).
+  rewrite <- (nop_sbop2 Z.sub N.sub 32 esp0 4).
+  + psimpl. reflexivity.
+  + rewrite N2Z.inj_sub. reflexivity.
+  rewrite (N.le_trans 4 24 esp0). reflexivity.
+  replace 24 with (4 + 20) by reflexivity.
+  apply N.le_add_r.
+  apply PRE0.
+  + intros. apply Zminus_mod.
+  + reflexivity.
+  - apply PRE0.
+
+  (* Address 4 *)
+  - step. step. step.
+
+  Show.
+Qed.
+
 (* Example #4: Partial correctness
    EAX equals zero if the input strings are equal up to n, EAX is negative if 
    the first lexicographically precedes the second, and EAX is positive 
@@ -64,7 +160,7 @@ Definition strncmp_invs (m:addr->N) (esp:N) (a:addr) (s:store) :=
 
 (*
   (* 0x40c00040: MOV EDI,dword ptr [ESP] *)
-  (* exists i < n, p1[i] != p2[i] /\ p2[i] != '\0' *)
+  (* n > 0 && exists i < n, p1[i] != p2[i] /\ p2[i] != '\0' *)
   | 64 => Some (exists i < n, 
                (m (p1 ⊕ i) <> m (p2 ⊕ i) /\ (m (p2 ⊕ i) <> 0)))
 
