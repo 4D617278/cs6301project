@@ -49,9 +49,13 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   | 0 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c00000: PUSH EBP *)
   | 1 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
+  (*
   (* 0x40c00001: PUSH EDI *)
+  | 2 => Some (s R_ESP = Ⓓ (esp0 - 8) /\ 24 <= esp0)
   (* 0x40c00002: PUSH ESI *)
+  | 3 => Some (s R_ESP = Ⓓ (esp0 - 12) /\ 24 <= esp0)
   (* 0x40c00003: PUSH EBX *)
+  *)
   | 4 => Some (s R_ESP = Ⓓ (esp0 - 16) /\ 24 <= esp0)
   (* 0x40c00004: SUB ESP,0x8 *)
   | 5 => Some (s R_ESP = Ⓓ (esp0 - 24) /\ 24 <= esp0)
@@ -121,20 +125,21 @@ Proof.
   (* Address 1 *)
   step.
   split.
-  - rewrite (sub_sbop 32 esp0 4).
-  rewrite <- (nop_sbop2 Z.sub N.sub 32 esp0 4).
-  + psimpl. reflexivity.
-  + rewrite N2Z.inj_sub. reflexivity.
+  rewrite (sub_mod_2w 32 esp0 4).
+  psimpl. reflexivity.
   rewrite (N.le_trans 4 24 esp0). reflexivity.
   replace 24 with (4 + 20) by reflexivity.
   apply N.le_add_r.
   apply PRE0.
-  + intros. apply Zminus_mod.
-  + reflexivity.
-  - apply PRE0.
+  reflexivity.
+  apply PRE0.
 
   (* Address 4 *)
-  - step. step. step.
+  - destruct PRE as [PRE PRE0].
+  step. step. step.
+  split.
+  Show.
+  + rewrite (sub_sbop 32 esp0 4).
 
   Show.
 Qed.
