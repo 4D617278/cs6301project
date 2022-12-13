@@ -52,7 +52,6 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   (* 0x40c00001: PUSH EDI *)
   (* 0x40c00002: PUSH ESI *)
   (* 0x40c00003: PUSH EBX *)
-  | 4 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00004: SUB ESP,0x8 *)
   | 7 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
 
@@ -74,14 +73,9 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
 
   | 149 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00095: POP EBX *)
-  (*
-  | 150 => Some (s R_ESP = Ⓓ (esp0 ⊖ 12) /\ 24 <= esp0)
   (* 0x40c00096: POP ESI *)
-  | 151 => Some (s R_ESP = Ⓓ (esp0 ⊖ 8) /\ 24 <= esp0)
   (* 0x40c00097: POP EDI *)
-  | 152 => Some (s R_ESP = Ⓓ (esp0 ⊖ 4) /\ 24 <= esp0)
   (* 0x40c00098: POP EBP *)
-  *)
   | 153 => Some (s R_ESP = Ⓓ (esp0 mod 2 ^ 32) /\ 24 <= esp0)
   (* 0x40c00099: RET  *)
   | _ => None
@@ -153,26 +147,6 @@ Proof.
   apply PRE0.
   apply PRE0.
 
-  (* Address 4 *)
-  split.
-  rewrite N.add_sub_assoc.
-  repeat rewrite <- N.sub_add_distr.
-  psimpl.
-  rewrite N.add_comm.
-  rewrite N.add_sub_swap.
-  psimpl.
-  reflexivity.
-
-  rewrite (N.le_trans 16 24 esp0). reflexivity.
-  replace 24 with (16 + 8) by reflexivity.
-  apply N.le_add_r.
-  apply PRE0.
-
-  rewrite (N.le_trans 4 24 esp0). reflexivity.
-  apply H.
-  apply PRE0.
-  apply PRE0.
-
   (* Address 7 *)
   split.
   rewrite N.add_sub_assoc.
@@ -184,8 +158,8 @@ Proof.
   reflexivity.
 
   apply PRE0.
-  rewrite (N.le_trans 16 24 esp0). reflexivity.
-  replace 24 with (16 + 8) by reflexivity.
+  rewrite (N.le_trans 4 24 esp0). reflexivity.
+  replace 24 with (4 + 20) by reflexivity.
   apply N.le_add_r.
   apply PRE0.
   apply PRE0.
@@ -233,7 +207,6 @@ Proof.
 
   (* Post Condition *)
   unfold esp_post.
-  simpl. psimpl.
   reflexivity.
 
   (* Address 149 *)
@@ -257,8 +230,9 @@ Proof.
 
   (* Post Condition *)
   unfold esp_post.
-  simpl. psimpl.
   reflexivity.
+
+  Show.
 Qed.
 
 (* Example #4: Partial correctness
@@ -276,6 +250,7 @@ Definition strncmp_invs (m:addr->N) (esp:N) (a:addr) (s:store) :=
   let p1 := m Ⓓ[esp ⊕ 4] in
   let p2 := m Ⓓ[esp ⊕ 8] in
   let n := m Ⓓ[esp ⊕ 12] in
+
   match a with
   (* 0x40c00000: PUSH EBP *)
   | 0 => Some True
@@ -334,6 +309,7 @@ Definition strncmp_post (m:addr->N) (esp:N) (_:exit) (s:store) :=
 Definition strncmp_invset (mem:addr->N) (esp:N) :=
   invs (strncmp_invs mem esp) (strncmp_post mem esp).
 
+(*
 (* (MDL0) Assume that on entry the processor is in a valid state.
    (ESP0) Let esp be the value of the ESP register on entry.
    (MEM0) Let mem be the memory state on entry.
@@ -374,3 +350,4 @@ Proof.
   (* Address 17 *)
   Show.
 Qed.
+*)
