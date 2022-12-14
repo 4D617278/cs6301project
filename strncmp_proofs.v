@@ -69,8 +69,6 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
 
   | 144 => Some (s R_ESP = Ⓓ (esp0 ⊖ 24) /\ 24 <= esp0)
   (* 0x40c00090: ADD ESP,0x8 *)
-
-  | 149 => Some (s R_ESP = Ⓓ (esp0 ⊖ 16) /\ 24 <= esp0)
   (* 0x40c00095: POP EBX *)
   (* 0x40c00096: POP ESI *)
   (* 0x40c00097: POP EDI *)
@@ -173,31 +171,11 @@ Proof.
   unfold esp_post.
   reflexivity.
 
-  (* Address 149 *)
-  split.
-
-  replace 24 with (16 + 8) by reflexivity.
-  rewrite N.sub_add_distr.
-  rewrite <- N.add_sub_swap.
-  psimpl.
-  reflexivity.
-
-  rewrite (N.le_add_le_sub_l 16 esp0 8).
-  reflexivity.
-
-  simpl.
-  apply PRE0.
-  apply PRE0.
-
   (* Address 153 *)
   split.
   rewrite <- N.add_sub_swap.
   psimpl.
   reflexivity.
-
-  rewrite (N.le_trans 16 24 esp0). reflexivity.
-  replace 24 with (16 + 8) by reflexivity.
-  apply N.le_add_r.
 
   apply PRE0.
   apply PRE0.
