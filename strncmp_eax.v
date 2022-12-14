@@ -28,7 +28,7 @@ Definition strncmp_invs (m:addr->N) (esp:N) (a:addr) (s:store) :=
 
   match a with
   (* 0x40c00000: PUSH EBP *)
-  | 0 => Some True
+  | 0 => Some (24 <= esp)
 
   (* 0x40c00040: MOV EDI,dword ptr [ESP] *)
   (* n > 0 && exists i < n, p1[i] != p2[i] /\ p2[i] != '\0' *)
@@ -94,23 +94,28 @@ Definition strncmp_invset (mem:addr->N) (esp:N) :=
 Theorem strncmp_partial_correctness:
   forall s esp mem n s' x
          (MDL0: models x86typctx s)
-         (ESP0: s R_ESP = Ⓓ esp) (MEM0: s V_MEM32 = Ⓜ mem)
-         (RET: strncmp_i386 s (mem Ⓓ[esp]) = None)
+         (ESP0: s R_ESP = Ⓓ esp /\ 24 <= esp) (MEM0: s V_MEM32 = Ⓜ mem)
+         (RET: strncmp_i386 s (mem Ⓓ[esp mod 2 ^ 32]) = None)
          (XP0: exec_prog fh strncmp_i386 0 s n s' x),
   trueif_inv (strncmp_invset mem esp strncmp_i386 x s').
 Proof.
   intros.
   eapply prove_invs. exact XP0.
 
-  (* The pre-condition (True) is trivially satisfied. *)
-  exact I.
+  (* pre-condition *)
+  destruct ESP0 as [ESP ESP0].
+  exact ESP0.
 
   (* Before splitting into cases, translate each hypothesis about the
      entry point store s to each instruction's starting store s1: *)
   intros.
   assert (MDL: models x86typctx s1).
     eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
+  (*
+  assert (MEM: s1 V_MEM32 = Ⓜ mem).
+    rewrite <- MEM0. eapply strncmp_preserves_memory. exact XP.
   rewrite (strncmp_nwc s1) in RET.
+  assert (ESP := strncmp_preserves_esp _ _ _ _ _ (Exit a1) MDL0 ESP0 MEM0 RET XP).
 
   (* Break the proof into cases, one for each invariant-point. *)
   destruct_inv 32 PRE.
@@ -122,6 +127,7 @@ Proof.
   (* Address 0 *)
   repeat step.
 
-  (* Address 64 *)
+  (* Address 144 *)
   Show.
-Qed.
+  *)
+Admitted.
