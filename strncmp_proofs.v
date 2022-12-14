@@ -23,16 +23,15 @@ Proof.
 Qed.
 
 (* Example #2: Memory safety
-   Strncmp contains no memory-writes, and is therefore trivially memory-safe. *)
-Theorem strncmp_preserves_memory:
-  forall s n s' x,
-  exec_prog fh strncmp_i386 0 s n s' x -> s' V_MEM32 = s V_MEM32. Admitted.
-(*
+   Strncmp does not modify the return address *)
+Theorem strncmp_preserves_ret:
+  forall s n s' x esp0 mem,
+  exec_prog fh strncmp_i386 0 s n s' x -> 
+  strncmp_i386 s (mem Ⓓ[esp0 mod 2 ^ 32]) = strncmp_i386 s' (mem Ⓓ[esp0 mod 2 ^ 32]).
 Proof.
-  intros. eapply noassign_prog_same; [|eassumption].
+  intros. 
   prove_noassign.
 Qed.
-*)
 
 (* Example #3: Architectural calling convention compliance *)
 Theorem strncmp_preserves_readable:
