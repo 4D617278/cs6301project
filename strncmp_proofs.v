@@ -103,8 +103,6 @@ Proof.
   assert (MEM: s1 V_MEM32 = Ⓜ mem).
     rewrite <- MEM0. eapply strncmp_preserves_memory. exact XP.
   rewrite (strncmp_nwc s1) in RET.
-  assert (H: 4 <= 24).
-    replace 24 with (4 + 20) by reflexivity. apply N.le_add_r.
 
   destruct_inv 32 PRE.
 
