@@ -48,7 +48,6 @@ Definition esp_invs (esp0:N) (a:addr) (s:store) :=
   match a with
   | 0 => Some (s R_ESP = Ⓓ esp0 /\ 24 <= esp0)
   (* 0x40c00000: PUSH EBP *)
-  | 1 => Some (s R_ESP = Ⓓ (esp0 - 4) /\ 24 <= esp0)
   (* 0x40c00001: PUSH EDI *)
   (* 0x40c00002: PUSH ESI *)
   (* 0x40c00003: PUSH EBX *)
@@ -89,24 +88,6 @@ Definition esp_post (esp0:N) (_:exit) (s:store) := s R_ESP = Ⓓ (esp0 ⊕ 4).
 Definition strncmp_esp_invset esp0 :=
   invs (esp_invs esp0) (esp_post esp0).
 
-Theorem test:
-  forall esp0, 24 <= esp0 -> Ⓓ (esp0 - 24 ⊕ 8) = Ⓓ (esp0 ⊖ 16).
-Proof.
-  intros.
-
-  replace 24 with (16 + 8) by reflexivity.
-  rewrite N.sub_add_distr.
-  rewrite <- N.add_sub_swap.
-  psimpl.
-  reflexivity.
-
-  rewrite (N.le_add_le_sub_l 16 esp0 8).
-  reflexivity.
-
-  simpl.
-  apply H.
-Qed.
-
 (* Asserts that this invariant-set is satisfied at all points *)
 Theorem strncmp_preserves_esp:
   forall s esp0 mem n s' x'
@@ -135,21 +116,8 @@ Proof.
 
   all: destruct PRE as [PRE PRE0]; repeat step.
 
-  (* Address 1 *)
-  split.
-  rewrite N.add_comm.
-  rewrite N.add_sub_swap.
-  psimpl.
-  reflexivity.
-
-  rewrite (N.le_trans 4 24 esp0). reflexivity.
-  apply H.
-  apply PRE0.
-  apply PRE0.
-
   (* Address 7 *)
   split.
-  rewrite N.add_sub_assoc.
   repeat rewrite <- N.sub_add_distr.
   psimpl.
   rewrite N.add_comm.
@@ -157,10 +125,6 @@ Proof.
   psimpl.
   reflexivity.
 
-  apply PRE0.
-  rewrite (N.le_trans 4 24 esp0). reflexivity.
-  replace 24 with (4 + 20) by reflexivity.
-  apply N.le_add_r.
   apply PRE0.
   apply PRE0.
 
@@ -211,7 +175,17 @@ Proof.
 
   (* Address 149 *)
   split.
-  apply test.
+
+  replace 24 with (16 + 8) by reflexivity.
+  rewrite N.sub_add_distr.
+  rewrite <- N.add_sub_swap.
+  psimpl.
+  reflexivity.
+
+  rewrite (N.le_add_le_sub_l 16 esp0 8).
+  reflexivity.
+
+  simpl.
   apply PRE0.
   apply PRE0.
 
