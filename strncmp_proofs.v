@@ -22,8 +22,14 @@ Proof.
   Picinae_typecheck.
 Qed.
 
-Definition ret_invs (esp0:N) (m0 m : addr -> N) (_:addr) (s:store) :=
-  Some (m Ⓓ[ esp0 mod 2 ^ 32 ] = m0 Ⓓ[ esp0 mod 2 ^ 32 ]).
+Definition ret_invs (esp0:N) (m0 m : addr -> N) (a:addr) (s:store) := 
+  match a with
+  |  0 => Some True
+  |  4 => Some ((m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]))
+  |  87 => Some ((m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]))
+  |  116 => Some ((m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]))
+  | _ => None
+  end.
 
 Definition ret_post (esp0:N) (m0 m : addr -> N) (_:exit) (s:store) := 
   (m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]).
@@ -40,11 +46,23 @@ Theorem strncmp_preserves_ret:
   (XP0: exec_prog fh strncmp_i386 0 s n s' x'),
   trueif_inv (strncmp_ret_invset esp0 m0 m strncmp_i386 x' s').
 Proof.
-  (*
   intros.
   eapply prove_invs. exact XP0.
-  *)
-Admitted.
+
+  reflexivity.
+
+  intros.
+  assert (MDL: models x86typctx s0).
+    eapply preservation_exec_prog. exact MDL0. apply strncmp_welltyped. exact XP.
+
+  destruct_inv 32 PRE.
+
+  Local Ltac step := time x86_step.
+
+  all: repeat step.
+
+  Show.
+Qed.
 
 (* Example #3: Architectural calling convention compliance *)
 Theorem strncmp_preserves_readable:
