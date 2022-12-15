@@ -24,3 +24,15 @@ Theorem strlen_welltyped: welltyped_prog x86typctx strlen_i386.
 Proof.
   Picinae_typecheck.
 Qed.
+
+(*
+(* Example #2: Memory safety
+   Strcmp contains no memory-writes, and is therefore trivially memory-safe. *)
+Theorem strcmp_preserves_memory:
+  forall s n s' x,
+  exec_prog fh strcmp_i386 0 s n s' x -> s' V_MEM32 = s V_MEM32.
+Proof.
+  intros. eapply noassign_prog_same; [|eassumption].
+  prove_noassign.
+Qed.
+*)
