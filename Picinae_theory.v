@@ -1501,6 +1501,22 @@ Proof.
     intros. rewrite <- Zminus_mod. reflexivity.
 Qed.
 
+Theorem sub_mod_2w:
+  forall w n1 n2 
+    (GE: n2 <= n1)
+    (LT_MAX: n2 < 2^w),
+  (2^w + n1 - n2) mod 2^w = (n1 - n2) mod 2^w.
+Proof.
+  intros.
+  - rewrite (sub_sbop w n1 n2).
+  rewrite <- (nop_sbop2 Z.sub N.sub w n1 n2).
+  + simpl. reflexivity.
+  + rewrite N2Z.inj_sub. reflexivity.
+  apply GE.
+  + intros. apply Zminus_mod.
+  + apply LT_MAX.
+Qed.
+
 Theorem ofZ_sub:
   forall w z1 z2, ofZ w (z1 - z2) = (2^w + ofZ w z1 - ofZ w z2) mod 2^w.
 Proof.
