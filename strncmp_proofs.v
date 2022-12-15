@@ -19,7 +19,18 @@ Proof. reflexivity. Qed.
 (* Example #1: Type safety *)
 Theorem strncmp_welltyped: welltyped_prog x86typctx strncmp_i386.
 Proof.
-  Picinae_typecheck.  Qed.
+  Picinae_typecheck.
+Qed.
+
+Definition ret_invs (esp0:N) (m0 m : addr -> N) (_:addr) (s:store) :=
+  Some (m Ⓓ[ esp0 mod 2 ^ 32 ] = m0 Ⓓ[ esp0 mod 2 ^ 32 ]).
+
+Definition ret_post (esp0:N) (m0 m : addr -> N) (_:exit) (s:store) := 
+  (m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]).
+
+Definition strncmp_ret_invset esp0 m0 m :=
+  invs (ret_invs esp0 m0 m) (ret_post esp0 m0 m).
+
 (* Strncmp does not modify the return address *)
 Theorem strncmp_preserves_ret:
   forall s esp0 m0 m n s' s1 x'
@@ -27,8 +38,12 @@ Theorem strncmp_preserves_ret:
   (MEM0: s V_MEM32 = Ⓜm0)
   (MEM1: s1 V_MEM32 = Ⓜm)
   (XP0: exec_prog fh strncmp_i386 0 s n s' x'),
-  (m Ⓓ[ esp0 mod 2 ^ 32 ]) = (m0 Ⓓ[ esp0 mod 2 ^ 32 ]).
+  trueif_inv (strncmp_ret_invset esp0 m0 m strncmp_i386 x' s').
 Proof.
+  (*
+  intros.
+  eapply prove_invs. exact XP0.
+  *)
 Admitted.
 
 (* Example #3: Architectural calling convention compliance *)
