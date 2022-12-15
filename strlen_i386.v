@@ -2,7 +2,7 @@ Require Import Picinae_i386.
 Require Import NArith.
 Open Scope N.
 
-Definition libc_so_6_strlen_i386 : program := fun _ a => match a with
+Definition strlen_i386 : program := fun _ a => match a with
 
 (* 0x40900000: PUSH EBX *)
 | 0 => Some (1,

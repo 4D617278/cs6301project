@@ -15,3 +15,5 @@ Picinae_i386.v
 #strcmp_proofs.v
 strncmp_i386.v
 strncmp_proofs.v
+strlen_i386.v
+strlen_proofs.v
