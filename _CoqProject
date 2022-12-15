@@ -17,3 +17,5 @@ strncmp_i386.v
 strncmp_proofs.v
 strlen_i386.v
 strlen_proofs.v
+strnlen_i386.v
+strnlen_proofs.v

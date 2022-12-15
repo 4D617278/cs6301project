@@ -36,7 +36,7 @@ Definition strnlen_i386 : program := fun _ a => match a with
 | 7 => Some (5,
 	Move R_ESP (BinOp OP_MINUS (Var R_ESP) (Word 4 32)) $;
 	Move V_MEM32 (Store (Var V_MEM32) (Var R_ESP) (Word 1089470476 32) LittleE 4) $;
-	Jmp (Word -1084224572 32)
+	Jmp (Word 3210742724 32)
 )
 
 (* 0x40f0000c: ADD EBX,0x2 *)
