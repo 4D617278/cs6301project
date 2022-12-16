@@ -150,4 +150,3 @@ Definition strlen (m:addr->N) (s:addr) (l:N) :=
    of zero and where the string is nonzero before n. *)
 Definition strlen_post (m:addr->N) (esp:N) (s:store) :=
   forall n, s R_EAX = Ⓓn -> strlen m (m Ⓓ[esp⊕4]) n.
-*)
