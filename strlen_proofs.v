@@ -81,6 +81,7 @@ Definition esp_post (esp0:N) (_:exit) (s:store) := s R_ESP = Ⓓ (esp0 ⊕ 4).
 Definition strlen_esp_invset esp0 :=
   invs (esp_invs esp0) (esp_post esp0).
 
+(*
 (* Now we pose a theorem that asserts that this invariant-set is satisfied at
   all points in the subroutine.  The "trueif_inv" function asserts that
   anywhere an invariant exists (e.g., at the post-condition), it is true. *)
@@ -136,6 +137,8 @@ Proof.
   all: try reflexivity.
   all: assumption.
 Admitted.
+*)
+
 (* Example #4: Partial correctness *)
 
 (* Define string length *)
